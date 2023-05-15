@@ -790,6 +790,7 @@ int background_varconst_of_z(
     break;
 
   case varconst_instant:
+    {
     double Lambda0 = (pba->Omega0_lambda)*pow(pba->H0,2);
     double a = 2*(pba->lambda_G_0 - pba->lambda_G_inf)/pow(pba->delta_z,3);
     double b = 6*(pba->varconst_transition_redshift)*(pba->lambda_G_0 - pba->lambda_G_inf)/pow(pba->delta_z,3);
@@ -820,6 +821,7 @@ int background_varconst_of_z(
       }
     }
     break;
+    }
 
     /* Implement here your arbitrary model of varying fundamental constants! */
   }
