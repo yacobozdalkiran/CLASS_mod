@@ -421,22 +421,26 @@ int background_functions(
 
   /** - compute each component's density and pressure */
 
+  double rho_lambda, alpha, me;
+  class_call(background_varconst_of_z(pba, 1./(1.-a), &(pvecback[pba->index_bg_lambda_G]), &rho_lambda, &alpha, &me ), pba->error_message,
+                 pba->error_message);
+  
   /* photons */
-  pvecback[pba->index_bg_rho_g] = pba->Omega0_g * pow(pba->H0,2) / pow(a,4);
+  pvecback[pba->index_bg_rho_g] = pba->Omega0_g * ((pvecback[pba->index_bg_lambda_G])/(pba->lambda_G_0))* pow(pba->H0,2) / pow(a,4);
   rho_tot += pvecback[pba->index_bg_rho_g];
   p_tot += (1./3.) * pvecback[pba->index_bg_rho_g];
   dp_dloga += -(4./3.) * pvecback[pba->index_bg_rho_g];
   rho_r += pvecback[pba->index_bg_rho_g];
 
   /* baryons */
-  pvecback[pba->index_bg_rho_b] = pba->Omega0_b * pow(pba->H0,2) / pow(a,3);
+  pvecback[pba->index_bg_rho_b] = pba->Omega0_b * ((pvecback[pba->index_bg_lambda_G])/(pba->lambda_G_0))* pow(pba->H0,2) / pow(a,3);
   rho_tot += pvecback[pba->index_bg_rho_b];
   p_tot += 0;
   rho_m += pvecback[pba->index_bg_rho_b];
 
   /* cdm */
   if (pba->has_cdm == _TRUE_) {
-    pvecback[pba->index_bg_rho_cdm] = pba->Omega0_cdm * pow(pba->H0,2) / pow(a,3);
+    pvecback[pba->index_bg_rho_cdm] = pba->Omega0_cdm * ((pvecback[pba->index_bg_lambda_G])/(pba->lambda_G_0))*pow(pba->H0,2) / pow(a,3);
     rho_tot += pvecback[pba->index_bg_rho_cdm];
     p_tot += 0.;
     rho_m += pvecback[pba->index_bg_rho_cdm];
@@ -530,8 +534,11 @@ int background_functions(
   }
 
   /* Lambda */
+  
   if (pba->has_lambda == _TRUE_) {
-    pvecback[pba->index_bg_rho_lambda] = pba->Omega0_lambda * pow(pba->H0,2);
+    double lambda_G, alpha, me;
+    class_call(background_varconst_of_z(pba, 1./(1.-a), &lambda_G, &(pvecback[pba->index_bg_rho_lambda]), &alpha, &me ), pba->error_message,
+                 pba->error_message);
     rho_tot += pvecback[pba->index_bg_rho_lambda];
     p_tot -= pvecback[pba->index_bg_rho_lambda];
   }
@@ -630,6 +637,8 @@ int background_functions(
     if (pba->has_varconst == _TRUE_) {
       class_call(background_varconst_of_z(pba,
                                           1./a-1.,
+                                          &(pvecback[pba->index_bg_lambda_G]),
+                                          &(pvecback[pba->index_bg_rho_lambda]),
                                           &(pvecback[pba->index_bg_varc_alpha]),
                                           &(pvecback[pba->index_bg_varc_me])
                                           ),
@@ -766,6 +775,8 @@ int background_w_fld(
 int background_varconst_of_z(
                              struct background* pba,
                              double z,
+                             double* lambda_G,
+                             double* rho_lambda,
                              double* alpha,
                              double* me
                              ){
@@ -775,16 +786,38 @@ int background_varconst_of_z(
   case varconst_none:
     *alpha = 1.;
     *me = 1.;
+    *lambda_G = 1;
     break;
 
   case varconst_instant:
-    if (z>pba->varconst_transition_redshift){
+    double Lambda0 = (pba->Omega0_lambda)*pow(pba->H0,2);
+    double a = 2*(pba->lambda_G_0 - pba->lambda_G_inf)/pow(pba->delta_z,3);
+    double b = 6*(pba->varconst_transition_redshift)*(pba->lambda_G_0 - pba->lambda_G_inf)/pow(pba->delta_z,3);
+    double c = 6*(pba->lambda_G_0 - pba->lambda_G_inf)/(pow(pba->varconst_transition_redshift,2)-pow(pba->delta_z,2)/4);
+    double d = pba->lambda_G_0 - 0.5*(pba->lambda_G_0 - pba->lambda_G_inf)/pow(pba->delta_z,3)*(4*pow((pba->varconst_transition_redshift),3) - 3*(pba->varconst_transition_redshift)*pow((pba->delta_z),2) + pow((pba->delta_z),3));
+    
+    if (z>(pba->varconst_transition_redshift + (pba->delta_z)/2)){
       *alpha = pba->varconst_alpha;
       *me = pba->varconst_me;
+      *lambda_G = pba->lambda_G_inf;
+      double dz = pba->delta_z;
+      *rho_lambda = Lambda0 - 3*(pba->Omega0_b + pba->Omega0_cdm)*pow(pba->H0,2)*(c*dz + (2*b+3*c)*pow(dz,2)/2 + (3*a+6*b+3*c)*pow(dz,3)/3+(9*a+6*b+c)*pow(dz, 4)/4 + (9*a+2*b)*pow(dz,5)/5 + 3*a*pow(dz,6)/6);
     }
     else{
       *alpha = 1.;
       *me = 1.;
+
+      if(z<=pba->varconst_transition_redshift + (pba->delta_z)/2 && z >= pba->varconst_transition_redshift - (pba->delta_z)/2){
+        *lambda_G = a*pow(z,3)+b*pow(z,2)+c*z+d;
+        double dz = z - (pba->varconst_transition_redshift) - (pba->delta_z)/2;
+        *rho_lambda = Lambda0 - 3*(pba->Omega0_b + pba->Omega0_cdm)*pow(pba->H0,2)*(c*dz + (2*b+3*c)*pow(dz,2)/2 + (3*a+6*b+3*c)*pow(dz,3)/3
+        +(9*a+6*b+c)*pow(dz, 4)/4 + (9*a+2*b)*pow(dz,5)/5 + 3*a*pow(dz,6)/6);
+      }
+
+      if (z<(pba->varconst_transition_redshift - (pba->delta_z)/2)){
+        *rho_lambda = (pba->Omega0_lambda)*pow(pba->H0,2);
+        *lambda_G = pba->lambda_G_0;
+      }
     }
     break;
 
@@ -1133,6 +1166,9 @@ int background_indices(
 
   /* -> varying fundamental constant -- alpha (fine structure) */
   class_define_index(pba->index_bg_varc_alpha,pba->has_varconst,index_bg,1);
+
+  /* -> varying fundamental constant -- lambda_G (fine structure) */
+  class_define_index(pba->index_bg_lambda_G,pba->has_varconst,index_bg,1);
 
   /* -> varying fundamental constant -- me (effective electron mass) */
   class_define_index(pba->index_bg_varc_me,pba->has_varconst,index_bg,1);
@@ -2544,6 +2580,7 @@ int background_output_data(
     class_store_double(dataptr,pvecback[pba->index_bg_D],_TRUE_,storeidx);
     class_store_double(dataptr,pvecback[pba->index_bg_f],_TRUE_,storeidx);
 
+    class_store_double(dataptr,pvecback[pba->index_bg_lambda_G],pba->has_varconst,storeidx);
     class_store_double(dataptr,pvecback[pba->index_bg_varc_alpha],pba->has_varconst,storeidx);
     class_store_double(dataptr,pvecback[pba->index_bg_varc_me],pba->has_varconst,storeidx);
   }

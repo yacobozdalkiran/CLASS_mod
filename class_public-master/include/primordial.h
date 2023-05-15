@@ -348,6 +348,7 @@ extern "C" {
 
   int primordial_init(
                       struct precision  * ppr,
+                      struct background * pba,
                       struct perturbations   * ppt,
                       struct primordial * ppm
                       );
@@ -404,12 +405,14 @@ extern "C" {
 
   int primordial_inflation_solve_inflation(
                                            struct perturbations * ppt,
+                                           struct background * pba,
                                            struct primordial * ppm,
                                            struct precision * ppr
                                            );
 
   int primordial_inflation_analytic_spectra(
                                             struct perturbations * ppt,
+                                            struct background * pba,
                                             struct primordial * ppm,
                                             struct precision * ppr,
                                             double * y_ini
@@ -417,6 +420,7 @@ extern "C" {
 
   int primordial_inflation_spectra(
                                    struct perturbations * ppt,
+                                   struct background * pba,
                                    struct primordial * ppm,
                                    struct precision * ppr,
                                    double * y_ini
@@ -424,6 +428,7 @@ extern "C" {
 
   int primordial_inflation_one_wavenumber(
                                           struct perturbations * ppt,
+                                          struct background * pba,
                                           struct primordial * ppm,
                                           struct precision * ppr,
                                           double * y_ini,
@@ -442,6 +447,7 @@ extern "C" {
 
   int primordial_inflation_find_attractor(
                                           struct primordial * ppm,
+                                          struct background * pba,
                                           struct precision * ppr,
                                           double phi_0,
                                           double precision,
@@ -453,6 +459,7 @@ extern "C" {
 
   int primordial_inflation_evolve_background(
                                              struct primordial * ppm,
+                                             struct background * pba,
                                              struct precision * ppr,
                                              double * y,
                                              double * dy,
@@ -488,6 +495,7 @@ extern "C" {
 
   int primordial_inflation_find_phi_pivot(
                                           struct primordial * ppm,
+                                          struct background * pba,
                                           struct precision * ppr,
                                           double * y,
                                           double * dy

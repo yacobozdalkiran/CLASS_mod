@@ -8933,7 +8933,7 @@ int perturbations_derivs(double tau,
       H0 = pba->H0 * _c_ / _Mpc_over_m_;
 
       //Computation of Nnow in SI units
-      Nnow = 3.*H0*H0*pba->Omega0_b*(1.-pth->YHe)/(8.*_PI_*_G_*_m_H_);
+      Nnow = 3.*H0*H0*pba->Omega0_b*(1.-pth->YHe)/(8.*_PI_*(pow(pba->lambda_G_0,2)*_G_)*_m_H_);
 
       // total amount of hydrogen today
       n_H = Nnow/pow(a,3);

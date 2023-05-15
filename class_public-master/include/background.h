@@ -58,6 +58,11 @@ struct background
    * e.g. for dark energy or decaying dark matter). */
 
   //@{
+  double lambda_G_0;
+  double lambda_G_inf;
+  double lambda_G;
+  double delta_z;
+
 
   double H0; /**< \f$ H_0 \f$: Hubble parameter (in fact, [\f$H_0/c\f$]) in \f$ Mpc^{-1} \f$ */
   double h;  /**< reduced Hubble parameter */
@@ -209,6 +214,7 @@ struct background
   int index_bg_D;             /**< scale independent growth factor D(a) for CDM perturbations */
   int index_bg_f;             /**< corresponding velocity growth factor [dlnD]/[dln a] */
 
+  int index_bg_lambda_G;
   int index_bg_varc_alpha;    /**< value of fine structure constant in varying fundamental constants */
   int index_bg_varc_me;      /**< value of effective electron mass in varying fundamental constants */
 
@@ -426,6 +432,8 @@ extern "C" {
   int background_varconst_of_z(
                                struct background* pba,
                                double z,
+                               double* lambda_G,
+                               double* rho_lambda,
                                double* alpha,
                                double* me
                                );

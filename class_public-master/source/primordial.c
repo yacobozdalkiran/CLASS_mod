@@ -185,6 +185,7 @@ int primordial_spectrum_at_k(
 
 int primordial_init(
                     struct precision  * ppr,
+                    struct background * pba,
                     struct perturbations   * ppt,
                     struct primordial * ppm
                     ) {
@@ -367,7 +368,7 @@ int primordial_init(
     if (ppm->primordial_verbose > 0)
       printf(" (simulating inflation)\n");
 
-    class_call_except(primordial_inflation_solve_inflation(ppt,ppm,ppr),
+    class_call_except(primordial_inflation_solve_inflation(ppt,pba,ppm,ppr),
                       ppm->error_message,
                       ppm->error_message,
                       primordial_free(ppm));
@@ -1133,6 +1134,7 @@ int primordial_inflation_indices(
 
 int primordial_inflation_solve_inflation(
                                          struct perturbations * ppt,
+                                         struct background * pba,
                                          struct primordial * ppm,
                                          struct precision *ppr
                                          ) {
@@ -1161,7 +1163,7 @@ int primordial_inflation_solve_inflation(
   /** - eventually, needs first to find phi_pivot */
   if (ppm->primordial_spec_type == inflation_V_end) {
 
-    class_call(primordial_inflation_find_phi_pivot(ppm,ppr,y,dy),
+    class_call(primordial_inflation_find_phi_pivot(ppm,pba,ppr,y,dy),
                ppm->error_message,
                ppm->error_message);
 
@@ -1201,7 +1203,7 @@ int primordial_inflation_solve_inflation(
     if (ppm->primordial_verbose > 1)
       printf(" (search attractor at pivot)\n");
 
-    class_call_except(primordial_inflation_find_attractor(ppm,
+    class_call_except(primordial_inflation_find_attractor(ppm,pba,
                                                           ppr,
                                                           ppm->phi_pivot,
                                                           ppr->primordial_inflation_attractor_precision_pivot,
@@ -1258,6 +1260,7 @@ int primordial_inflation_solve_inflation(
     y[ppm->index_in_dphi] = a_pivot*dphidt_pivot;
 
   class_call_except(primordial_inflation_evolve_background(ppm,
+                                                           pba,
                                                            ppr,
                                                            y,
                                                            dy,
@@ -1323,6 +1326,7 @@ int primordial_inflation_solve_inflation(
          is found. */
 
       class_call_except(primordial_inflation_evolve_background(ppm,
+                                                               pba,
                                                                ppr,
                                                                y,
                                                                dy,
@@ -1342,7 +1346,7 @@ int primordial_inflation_solve_inflation(
          dphi/dtau_ini */
 
       /* find dphi/dt_ini (unlike dphi/dtau_ini, this does not depend on normalization of a) */
-      class_call_except(primordial_inflation_find_attractor(ppm,
+      class_call_except(primordial_inflation_find_attractor(ppm,pba,
                                                             ppr,
                                                             phi_try,
                                                             ppr->primordial_inflation_attractor_precision_initial,
@@ -1363,6 +1367,7 @@ int primordial_inflation_solve_inflation(
       y[ppm->index_in_dphi] = y[ppm->index_in_a]*dphidt_try; // dphi/dtau = a dphi/dt
 
       class_call_except(primordial_inflation_evolve_background(ppm,
+                                                               pba,
                                                                ppr,
                                                                y,
                                                                dy,
@@ -1396,6 +1401,7 @@ int primordial_inflation_solve_inflation(
     y[ppm->index_in_phi] = ppm->phi_pivot;
 
     class_call_except(primordial_inflation_evolve_background(ppm,
+                                                             pba,
                                                              ppr,
                                                              y,
                                                              dy,
@@ -1427,7 +1433,7 @@ int primordial_inflation_solve_inflation(
 
   if (ppm->behavior == numerical) {
 
-    class_call_except(primordial_inflation_spectra(ppt,
+    class_call_except(primordial_inflation_spectra(ppt,pba,
                                                    ppm,
                                                    ppr,
                                                    y_ini),
@@ -1437,7 +1443,7 @@ int primordial_inflation_solve_inflation(
   }
   else if (ppm->behavior == analytical) {
 
-    class_call_except(primordial_inflation_analytic_spectra(ppt,
+    class_call_except(primordial_inflation_analytic_spectra(ppt,pba,
                                                             ppm,
                                                             ppr,
                                                             y_ini),
@@ -1458,6 +1464,7 @@ int primordial_inflation_solve_inflation(
     y[ppm->index_in_dphi] = y_ini[ppm->index_in_dphi];
 
   class_call_except(primordial_inflation_evolve_background(ppm,
+                                                           pba,
                                                            ppr,
                                                            y,
                                                            dy,
@@ -1473,6 +1480,7 @@ int primordial_inflation_solve_inflation(
   ppm->phi_min=y[ppm->index_in_phi];
 
   class_call_except(primordial_inflation_evolve_background(ppm,
+                                                           pba,
                                                            ppr,
                                                            y,
                                                            dy,
@@ -1516,6 +1524,7 @@ int primordial_inflation_solve_inflation(
 
 int primordial_inflation_analytic_spectra(
                                           struct perturbations * ppt,
+                                          struct background * pba,
                                           struct primordial * ppm,
                                           struct precision * ppr,
                                           double * y_ini
@@ -1545,6 +1554,7 @@ int primordial_inflation_analytic_spectra(
 
     /* evolve background until k=aH is reached */
     class_call(primordial_inflation_evolve_background(ppm,
+                                                      pba,
                                                       ppr,
                                                       y,
                                                       dy,
@@ -1592,6 +1602,7 @@ int primordial_inflation_analytic_spectra(
 
 int primordial_inflation_spectra(
                                  struct perturbations * ppt,
+                                 struct background * pba,
                                  struct primordial * ppm,
                                  struct precision * ppr,
                                  double * y_ini
@@ -1644,7 +1655,7 @@ int primordial_inflation_spectra(
       tstart = omp_get_wtime();
 #endif
 
-      class_call_parallel(primordial_inflation_one_wavenumber(ppt,ppm,ppr,y_ini,index_k),
+      class_call_parallel(primordial_inflation_one_wavenumber(ppt,pba,ppm,ppr,y_ini,index_k),
                           ppm->error_message,
                           ppm->error_message);
 
@@ -1689,6 +1700,7 @@ int primordial_inflation_spectra(
 
 int primordial_inflation_one_wavenumber(
                                         struct perturbations * ppt,
+                                        struct background * pba,
                                         struct primordial * ppm,
                                         struct precision * ppr,
                                         double * y_ini,
@@ -1715,6 +1727,7 @@ int primordial_inflation_one_wavenumber(
   /** - evolve the background until the relevant initial time for
       integrating perturbations */
   class_call(primordial_inflation_evolve_background(ppm,
+                                                    pba,
                                                     ppr,
                                                     y,
                                                     dy,
@@ -1941,6 +1954,7 @@ int primordial_inflation_one_k(
 
 int primordial_inflation_find_attractor(
                                         struct primordial * ppm,
+                                        struct background * pba,
                                         struct precision * ppr,
                                         double phi_0,
                                         double precision,
@@ -2010,6 +2024,7 @@ int primordial_inflation_find_attractor(
     /* evolve the background equations until phi_0 is reached */
 
     class_call(primordial_inflation_evolve_background(ppm,
+                                                       pba,
                                                       ppr,
                                                       y,
                                                       dy,
@@ -2078,6 +2093,7 @@ int primordial_inflation_find_attractor(
 
 int primordial_inflation_evolve_background(
                                            struct primordial * ppm,
+                                           struct background * pba,
                                            struct precision * ppr,
                                            double * y,
                                            double * dy,
@@ -2538,6 +2554,7 @@ int primordial_inflation_get_epsilon(
 
 int primordial_inflation_find_phi_pivot(
                                         struct primordial * ppm,
+                                        struct background * pba,
                                         struct precision * ppr,
                                         double * y,
                                         double * dy
@@ -2606,7 +2623,7 @@ int primordial_inflation_find_phi_pivot(
     phi_small_epsilon = phi_mid;
 
     /** - --> find inflationary attractor in phi_small_epsilon (should exist since epsilon<<1 there) */
-    class_call(primordial_inflation_find_attractor(ppm,
+    class_call(primordial_inflation_find_attractor(ppm,pba,
                                                    ppr,
                                                    phi_small_epsilon,
                                                    ppr->primordial_inflation_attractor_precision_initial,
@@ -2622,7 +2639,7 @@ int primordial_inflation_find_phi_pivot(
     y[ppm->index_in_phi]= phi_small_epsilon;
     y[ppm->index_in_dphi]=y[ppm->index_in_a]*dphidt_small_epsilon;
 
-    class_call(primordial_inflation_evolve_background(ppm,
+    class_call(primordial_inflation_evolve_background(ppm,pba,
                                                       ppr,
                                                       y,
                                                       dy,
@@ -2645,7 +2662,7 @@ int primordial_inflation_find_phi_pivot(
       /* get the target value of ln_aH_ratio */
 
       rho_end = 2./8./_PI_*pow(dy[ppm->index_in_a]/y[ppm->index_in_a],2);
-      rho_end = 8*_PI_/3.*rho_end/(_G_*_h_P_/pow(_c_,3))*pow(_Mpc_over_m_,2);
+      rho_end = 8*_PI_/3.*rho_end/((pow(pba->lambda_G,2)*_G_)*_h_P_/pow(_c_,3))*pow(_Mpc_over_m_,2);
       h = 0.7;
       H0 = h * 1.e5 / _c_;
       rho_c0 = pow(H0,2);
@@ -2690,7 +2707,7 @@ int primordial_inflation_find_phi_pivot(
     case ln_aH_ratio_auto:
     case ln_aH_ratio:
 
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
@@ -2705,7 +2722,7 @@ int primordial_inflation_find_phi_pivot(
 
     case N_star:
 
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
@@ -2725,7 +2742,7 @@ int primordial_inflation_find_phi_pivot(
 
     /** - --> find attractor in phi_try */
 
-    class_call(primordial_inflation_find_attractor(ppm,
+    class_call(primordial_inflation_find_attractor(ppm,pba,
                                                    ppr,
                                                    phi_try,
                                                    ppr->primordial_inflation_attractor_precision_initial,
@@ -2742,7 +2759,7 @@ int primordial_inflation_find_phi_pivot(
     y[ppm->index_in_phi]= phi_try;
     y[ppm->index_in_dphi]= dphidt_try;
 
-    class_call(primordial_inflation_evolve_background(ppm,
+    class_call(primordial_inflation_evolve_background(ppm, pba,
                                                       ppr,
                                                       y,
                                                       dy,
@@ -2793,7 +2810,7 @@ int primordial_inflation_find_phi_pivot(
     case ln_aH_ratio_auto:
     case ln_aH_ratio:
 
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
@@ -2808,7 +2825,7 @@ int primordial_inflation_find_phi_pivot(
 
     case N_star:
 
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
@@ -2834,7 +2851,7 @@ int primordial_inflation_find_phi_pivot(
 
       aH_pivot = dy[0];
       a_pivot = y[0];
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
@@ -2854,7 +2871,7 @@ int primordial_inflation_find_phi_pivot(
   else {
 
     /** - --> find inflationary attractor in phi_small_epsilon (should exist since epsilon<1 there) */
-    class_call(primordial_inflation_find_attractor(ppm,
+    class_call(primordial_inflation_find_attractor(ppm,pba,
                                                    ppr,
                                                    ppm->phi_end,
                                                    ppr->primordial_inflation_attractor_precision_initial,
@@ -2883,7 +2900,7 @@ int primordial_inflation_find_phi_pivot(
     case ln_aH_ratio_auto:
     case ln_aH_ratio:
 
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
@@ -2898,7 +2915,7 @@ int primordial_inflation_find_phi_pivot(
 
     case N_star:
 
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
@@ -2918,7 +2935,7 @@ int primordial_inflation_find_phi_pivot(
 
     /** - --> find attractor in phi_try */
 
-    class_call(primordial_inflation_find_attractor(ppm,
+    class_call(primordial_inflation_find_attractor(ppm,pba,
                                                    ppr,
                                                    phi_try,
                                                    ppr->primordial_inflation_attractor_precision_initial,
@@ -2935,7 +2952,7 @@ int primordial_inflation_find_phi_pivot(
     y[ppm->index_in_phi]= phi_try;
     y[ppm->index_in_dphi]= dphidt_try;
 
-    class_call(primordial_inflation_evolve_background(ppm,
+    class_call(primordial_inflation_evolve_background(ppm, pba,
                                                       ppr,
                                                       y,
                                                       dy,
@@ -2986,7 +3003,7 @@ int primordial_inflation_find_phi_pivot(
     case ln_aH_ratio_auto:
     case ln_aH_ratio:
 
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
@@ -3001,7 +3018,7 @@ int primordial_inflation_find_phi_pivot(
 
     case N_star:
 
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
@@ -3027,7 +3044,7 @@ int primordial_inflation_find_phi_pivot(
 
       aH_pivot = dy[0];
       a_pivot = y[0];
-      class_call(primordial_inflation_evolve_background(ppm,
+      class_call(primordial_inflation_evolve_background(ppm, pba,
                                                         ppr,
                                                         y,
                                                         dy,
