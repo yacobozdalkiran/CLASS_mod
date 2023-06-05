@@ -2662,7 +2662,7 @@ int primordial_inflation_find_phi_pivot(
       /* get the target value of ln_aH_ratio */
 
       rho_end = 2./8./_PI_*pow(dy[ppm->index_in_a]/y[ppm->index_in_a],2);
-      rho_end = 8*_PI_/3.*rho_end/((pow(pba->lambda_G,2)*_G_)*_h_P_/pow(_c_,3))*pow(_Mpc_over_m_,2);
+      rho_end = 8*_PI_/3.*rho_end/((pow(pba->lambda_G_inf,2)*_G_)*_h_P_/pow(_c_,3))*pow(_Mpc_over_m_,2);
       h = 0.7;
       H0 = h * 1.e5 / _c_;
       rho_c0 = pow(H0,2);

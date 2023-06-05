@@ -787,6 +787,7 @@ int background_varconst_of_z(
     *alpha = 1.;
     *me = 1.;
     *lambda_G = 1;
+    *rho_lambda = pba->Omega0_lambda * pow(pba->H0,2);
     break;
 
   case varconst_instant:
