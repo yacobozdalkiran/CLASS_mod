@@ -62,6 +62,12 @@ struct background
   double H0; /**< \f$ H_0 \f$: Hubble parameter (in fact, [\f$H_0/c\f$]) in \f$ Mpc^{-1} \f$ */
   double h;  /**< reduced Hubble parameter */
 
+  double lambda_G_0; /*value of lambda_G now*/
+  double lambda_G_inf; /*value of lambda_G at high z*/
+  double lambda_G; /*value of lambda_G*/
+  double delta_z; /*width of the transition zone*/
+
+
   double Omega0_g; /**< \f$ \Omega_{0 \gamma} \f$: photons */
   double T_cmb;    /**< \f$ T_{cmb} \f$: current CMB temperature in Kelvins */
 
@@ -211,6 +217,7 @@ struct background
 
   int index_bg_varc_alpha;    /**< value of fine structure constant in varying fundamental constants */
   int index_bg_varc_me;      /**< value of effective electron mass in varying fundamental constants */
+  int index_bg_lambda_G;   /*value of lambda_G in varying fundamental constants*/
 
   int bg_size_short;  /**< size of background vector in the "short format" */
   int bg_size_normal; /**< size of background vector in the "normal format" */
@@ -426,6 +433,8 @@ extern "C" {
   int background_varconst_of_z(
                                struct background* pba,
                                double z,
+                               double* lambda_G,
+                               double* rho_lambda,
                                double* alpha,
                                double* me
                                );
