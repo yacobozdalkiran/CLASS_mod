@@ -796,8 +796,8 @@ int background_varconst_of_z(
     double b = -3*a*(pba->varconst_transition_redshift);
     double c = 3*a*(pow(pba->varconst_transition_redshift,2) - pow(pba->delta_z, 2)/4);
     double d = pba->lambda_G_0 - 0.25*a*(4*pow(pba->varconst_transition_redshift,3) - 3*pow(pba->delta_z,2)*(pba->varconst_transition_redshift) + pow(pba->delta_z,3));
-    double zp;
     double zm = pba->varconst_transition_redshift - 0.5*(pba->delta_z);
+    double zp;
     if (z >= pba->varconst_transition_redshift+pba->delta_z/2) {
 			zp = pba->varconst_transition_redshift+pba->delta_z/2;
 		}
@@ -825,8 +825,6 @@ int background_varconst_of_z(
     }
     break;
   }
-    
-
     /* Implement here your arbitrary model of varying fundamental constants! */
   }
   return _SUCCESS_;
