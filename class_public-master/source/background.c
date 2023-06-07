@@ -1836,7 +1836,7 @@ int background_checks(
            density of one neutrino in the instantaneous decoupling
            limit, i.e. assuming T_nu=(4/11)^1/3 T_gamma (this comes
            from the definition of N_eff) */
-        rho_nu_rel = 56.0/45.0*pow(_PI_,6)*pow(4.0/11.0,4.0/3.0)*_G_/pow(_h_P_,3)/pow(_c_,7)*
+        rho_nu_rel = 56.0/45.0*pow(_PI_,6)*pow(4.0/11.0,4.0/3.0)*(pow(pba->lambda_G_rad,2)*_G_)/pow(_h_P_,3)/pow(_c_,7)*
           pow(_Mpc_over_m_,2)*pow(pba->T_cmb*_k_B_,4);
 
         printf(" -> ncdm species i=%d sampled with %d (resp. %d) points for purpose of background (resp. perturbation) integration. In the relativistic limit it gives Delta N_eff = %g\n",

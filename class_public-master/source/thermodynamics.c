@@ -352,7 +352,7 @@ int thermodynamics_init(
   pth->fHe = pth->YHe/(_not4_ *(1.-pth->YHe));
 
   /** - infer number of hydrogen nuclei today in m**-3 */
-  pth->n_e = 3.*pow(pba->H0 * _c_ / _Mpc_over_m_,2)*pba->Omega0_b/(8.*_PI_*_G_*_m_H_)*(1.-pth->YHe);
+  pth->n_e = 3.*pow(pba->H0 * _c_ / _Mpc_over_m_,2)*pba->Omega0_b/(8.*_PI_*(pow(pba->lambda_G_m,2)*_G_)*_m_H_)*(1.-pth->YHe);
 
   /** - test whether all parameters are in the correct regime */
   class_call(thermodynamics_checks(ppr,pba,pth),
@@ -758,7 +758,7 @@ int thermodynamics_workspace_init(
   /* Hubble parameter today in SI units */
   ptw->SIunit_H0 = pba->H0 * _c_ / _Mpc_over_m_;
   /* H number density today in SI units*/
-  ptw->SIunit_nH0 = 3.*ptw->SIunit_H0*ptw->SIunit_H0*pba->Omega0_b/(8.*_PI_*_G_*_m_H_)*(1.-ptw->YHe);
+  ptw->SIunit_nH0 = 3.*ptw->SIunit_H0*ptw->SIunit_H0*pba->Omega0_b/(8.*_PI_*(pow(pba->lambda_G_m,2)*_G_)*_m_H_)*(1.-ptw->YHe);
   /* CMB temperature today in Kelvin */
   ptw->Tcmb = pba->T_cmb;
 
@@ -3142,7 +3142,7 @@ int thermodynamics_calculate_conformal_drag_time(
                pba->error_message,
                pth->error_message);
 
-    R = 3./4.*pvecback[pba->index_bg_rho_b]/pvecback[pba->index_bg_rho_g];
+    R = 3./4.*pvecback[pba->index_bg_rho_b]/pvecback[pba->index_bg_rho_g]*pow(pba->lambda_G_rad,2)/pow(pba->lambda_G_m,2);
 
     pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_ddkappa] =
       -1./R*pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_dkappa];

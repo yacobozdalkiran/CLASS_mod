@@ -62,6 +62,9 @@ struct background
   double H0; /**< \f$ H_0 \f$: Hubble parameter (in fact, [\f$H_0/c\f$]) in \f$ Mpc^{-1} \f$ */
   double h;  /**< reduced Hubble parameter */
 
+  double lambda_G_m; /*Free G for matter*/
+  double lambda_G_rad; /*Free G for radiation*/
+
   double Omega0_g; /**< \f$ \Omega_{0 \gamma} \f$: photons */
   double T_cmb;    /**< \f$ T_{cmb} \f$: current CMB temperature in Kelvins */
 
