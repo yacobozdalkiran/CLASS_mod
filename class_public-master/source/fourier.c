@@ -3201,7 +3201,7 @@ int fourier_hmcode(
   z_at_tau = 1./pvecback[pba->index_bg_a]-1.;
 
   /* The number below is the critical density today, rho_c = 3 * H0^2 / 8*pi*G, in units of M_sun over Mpc^3 */
-  rho_crit_today_in_msun_mpc3 = 3.*pow(1.e5*pba->h, 2)/8./_PI_/_G_*_Mpc_over_m_/_M_SUN_;
+  rho_crit_today_in_msun_mpc3 = 3.*pow(1.e5*pba->h, 2)/8./_PI_/(pow(pba->lambda_G_m_0,2)*_G_)*_Mpc_over_m_/_M_SUN_;
 
   free(pvecback);
 

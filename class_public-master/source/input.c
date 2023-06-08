@@ -2260,6 +2260,10 @@ int input_read_parameters_general(struct file_content * pfc,
     class_read_double("varying_alpha",pba->varconst_alpha);
     class_read_double("varying_me",pba->varconst_me);
     class_read_double("varying_transition_redshift",pba->varconst_transition_redshift);
+    class_read_double("lambda_G_m_0", pba->lambda_G_m_0);
+    class_read_double("lambda_G_m_inf", pba->lambda_G_m_inf);
+    class_read_double("lambda_G_rad", pba->lambda_G_rad);
+    class_read_double("delta_z", pba->delta_z);
     break;
   }
 
@@ -2334,20 +2338,20 @@ int input_read_parameters_species(struct file_content * pfc,
      rho_g = (4 sigma_B/c) T^4
      rho_c0 = 3 c^2 H_0^2/(8 \pi G) */
   if (class_none_of_three(flag1,flag2,flag3)){
-    pba->Omega0_g = (4.*sigma_B/_c_*pow(pba->T_cmb,4.))/(3.*_c_*_c_*1.e10*pba->h*pba->h/_Mpc_over_m_/_Mpc_over_m_/8./_PI_/_G_);
+    pba->Omega0_g = (4.*sigma_B/_c_*pow(pba->T_cmb,4.))/(3.*_c_*_c_*1.e10*pba->h*pba->h/_Mpc_over_m_/_Mpc_over_m_/8./_PI_/(pow(pba->lambda_G_rad,2)*_G_));
   }
   else {
     if (flag1 == _TRUE_){
-      pba->Omega0_g = (4.*sigma_B/_c_*pow(param1,4.))/(3.*_c_*_c_*1.e10*pba->h*pba->h/_Mpc_over_m_/_Mpc_over_m_/8./_PI_/_G_);
+      pba->Omega0_g = (4.*sigma_B/_c_*pow(param1,4.))/(3.*_c_*_c_*1.e10*pba->h*pba->h/_Mpc_over_m_/_Mpc_over_m_/8./_PI_/(pow(pba->lambda_G_rad,2)*_G_));
       pba->T_cmb=param1;
     }
     if (flag2 == _TRUE_){
       pba->Omega0_g = param2;
-      pba->T_cmb = pow(pba->Omega0_g*(3.*_c_*_c_*1.e10*pba->h*pba->h/_Mpc_over_m_/_Mpc_over_m_/8./_PI_/_G_)/(4.*sigma_B/_c_),0.25);
+      pba->T_cmb = pow(pba->Omega0_g*(3.*_c_*_c_*1.e10*pba->h*pba->h/_Mpc_over_m_/_Mpc_over_m_/8./_PI_/(pow(pba->lambda_G_rad,2)*_G_))/(4.*sigma_B/_c_),0.25);
     }
     if (flag3 == _TRUE_){
       pba->Omega0_g = param3/pba->h/pba->h;
-      pba->T_cmb = pow(pba->Omega0_g*(3.*_c_*_c_*1.e10*pba->h*pba->h/_Mpc_over_m_/_Mpc_over_m_/8./_PI_/_G_)/(4.*sigma_B/_c_),0.25);
+      pba->T_cmb = pow(pba->Omega0_g*(3.*_c_*_c_*1.e10*pba->h*pba->h/_Mpc_over_m_/_Mpc_over_m_/8./_PI_/(pow(pba->lambda_G_rad,2)*_G_))/(4.*sigma_B/_c_),0.25);
     }
   }
   class_test(pba->Omega0_g<0,errmsg,"You cannot set the photon density to negative values.");
@@ -5668,6 +5672,11 @@ int input_default_params(struct background *pba,
   pba->varconst_me = 1.;
   pth->bbn_alpha_sensitivity = 1.;
   pba->varconst_transition_redshift = 50.;
+  pba->lambda_G_m_0 = 1.;
+  pba->lambda_G_m_inf = 1.;
+  pba->lambda_G_rad = 1.;
+  pba->delta_z = 0.01;
+
 
   /**
    * Default to input_read_parameters_species

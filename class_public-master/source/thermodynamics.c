@@ -71,7 +71,7 @@ int thermodynamics_at_z(
   /* Dark matter baryon scattering */
   double Vrms_idm_b2, T_diff_idm_b, m_b, FHe;
   /* Varying fundamental constants */
-  double sigmaTrescale = 1., alpha = 1., me = 1.;
+  double sigmaTrescale = 1., alpha = 1., me = 1., lambda_G_m, rho_lambda;
 
   /* The fact that z is in the pre-computed range 0 <= z <= z_initial will be checked in the interpolation routines below. Before
      trying to interpolate, allow the routine to deal with the case z > z_initial: then, all relevant quantities can be extrapolated
@@ -85,7 +85,7 @@ int thermodynamics_at_z(
 
     /* In the case of varying fundamental constants, compute correction factor (according to 1705.03925) */
     if (pth->has_varconst == _TRUE_) {
-      class_call(background_varconst_of_z(pba, z, &alpha, &me),
+      class_call(background_varconst_of_z(pba, z, &lambda_G_m, &rho_lambda, &alpha, &me),
                  pba->error_message,
                  pth->error_message);
       sigmaTrescale = alpha*alpha/me/me;
@@ -352,7 +352,7 @@ int thermodynamics_init(
   pth->fHe = pth->YHe/(_not4_ *(1.-pth->YHe));
 
   /** - infer number of hydrogen nuclei today in m**-3 */
-  pth->n_e = 3.*pow(pba->H0 * _c_ / _Mpc_over_m_,2)*pba->Omega0_b/(8.*_PI_*_G_*_m_H_)*(1.-pth->YHe);
+  pth->n_e = 3.*pow(pba->H0 * _c_ / _Mpc_over_m_,2)*pba->Omega0_b/(8.*_PI_*(pow(pba->lambda_G_m_0,2)*_G_)*_m_H_)*(1.-pth->YHe);
 
   /** - test whether all parameters are in the correct regime */
   class_call(thermodynamics_checks(ppr,pba,pth),
@@ -740,7 +740,7 @@ int thermodynamics_workspace_init(
   /** Define local variables */
   int index_ap;
   /* for varying fundamental constants */
-  double alpha = 1., me = 1.;
+  double alpha = 1., me = 1., lambda_G_m, rho_lambda;
 
   /** - number of z values */
   ptw->Nz_reco_lin = ppr->thermo_Nz_lin;
@@ -758,7 +758,7 @@ int thermodynamics_workspace_init(
   /* Hubble parameter today in SI units */
   ptw->SIunit_H0 = pba->H0 * _c_ / _Mpc_over_m_;
   /* H number density today in SI units*/
-  ptw->SIunit_nH0 = 3.*ptw->SIunit_H0*ptw->SIunit_H0*pba->Omega0_b/(8.*_PI_*_G_*_m_H_)*(1.-ptw->YHe);
+  ptw->SIunit_nH0 = 3.*ptw->SIunit_H0*ptw->SIunit_H0*pba->Omega0_b/(8.*_PI_*(pow(pba->lambda_G_m_0,2)*_G_)*_m_H_)*(1.-ptw->YHe);
   /* CMB temperature today in Kelvin */
   ptw->Tcmb = pba->T_cmb;
 
@@ -824,7 +824,7 @@ int thermodynamics_workspace_init(
   /** - Rescale these redshifts in case of varying fundamental constants */
   if (pth->has_varconst == _TRUE_) {
     for (index_ap=0;index_ap<ptw->ptdw->ap_size;++index_ap){
-      class_call(background_varconst_of_z(pba,ptw->ptdw->ap_z_limits[index_ap], &alpha, &me),
+      class_call(background_varconst_of_z(pba,ptw->ptdw->ap_z_limits[index_ap], &lambda_G_m, &rho_lambda, &alpha, &me),
                  pba->error_message,
                  pth->error_message);
       ptw->ptdw->ap_z_limits[index_ap]*=me*alpha*alpha;
@@ -2857,7 +2857,7 @@ int thermodynamics_sources(
   /* Shorthand notations */
   double z,x=0.,Tmat,Trad,dTmat;
   /* Varying fundamental constants */
-  double sigmaTrescale = 1.,alpha = 1.,me = 1.;
+  double sigmaTrescale = 1.,alpha = 1.,me = 1., lambda_G_m, rho_lambda;
   /* Recfast smoothing */
   double x_previous, weight,s;
   /* Structures as shorthand_notation */
@@ -2905,7 +2905,7 @@ int thermodynamics_sources(
 
   /* Get sigmaT rescale factor from fundamental constants */
   if (pth->has_varconst == _TRUE_) {
-    class_call(background_varconst_of_z(pba, z, &alpha, &me),
+    class_call(background_varconst_of_z(pba, z, &lambda_G_m, &rho_lambda, &alpha, &me),
                pba->error_message,
                pth->error_message);
     sigmaTrescale = alpha*alpha/me/me;
@@ -3142,7 +3142,12 @@ int thermodynamics_calculate_conformal_drag_time(
                pba->error_message,
                pth->error_message);
 
-    R = 3./4.*pvecback[pba->index_bg_rho_b]/pvecback[pba->index_bg_rho_g];
+    double alpha = 1., me = 1., lambda_G_m = 1., rho_lambda = 1.;
+    class_call(background_varconst_of_z(pba, 1./pvecback[pba->index_bg_a] - 1., &lambda_G_m, &rho_lambda, &alpha, &me),
+                 pba->error_message,
+                 pth->error_message);
+
+    R = 3./4.*pvecback[pba->index_bg_rho_b]/pvecback[pba->index_bg_rho_g]*pow(pba->lambda_G_rad,2)/pow(lambda_G_m,2);
 
     pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_ddkappa] =
       -1./R*pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_dkappa];
@@ -3920,10 +3925,10 @@ int thermodynamics_ionization_fractions(
 
   /* Varying fundamental constants (according to 1705.03925) */
   double rescale_rhs = 1., rescale_T = 1.;
-  double alpha = 1., me = 1.;
+  double alpha = 1., me = 1., lambda_G_m, rho_lambda;
 
   if (pth->has_varconst == _TRUE_) {
-    class_call(background_varconst_of_z(pba, z, &alpha, &me),
+    class_call(background_varconst_of_z(pba, z, &lambda_G_m, &rho_lambda, &alpha, &me),
                pba->error_message,
                pth->error_message);
     rescale_rhs = alpha*alpha*alpha*me*me*me;

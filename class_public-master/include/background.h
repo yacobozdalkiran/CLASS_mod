@@ -62,6 +62,12 @@ struct background
   double H0; /**< \f$ H_0 \f$: Hubble parameter (in fact, [\f$H_0/c\f$]) in \f$ Mpc^{-1} \f$ */
   double h;  /**< reduced Hubble parameter */
 
+  double lambda_G_rad; /*G_r = pow(lambda_G_rad,2)**G_newton*/
+  double lambda_G_m_0; /*Value of lambda_G_m at z=0*/
+  double lambda_G_m_inf; /*Value of lambda_G_m at z=inf**/
+  double delta_z; /*Duration of the transition of G_mat*/
+
+
   double Omega0_g; /**< \f$ \Omega_{0 \gamma} \f$: photons */
   double T_cmb;    /**< \f$ T_{cmb} \f$: current CMB temperature in Kelvins */
 
@@ -426,6 +432,8 @@ extern "C" {
   int background_varconst_of_z(
                                struct background* pba,
                                double z,
+                               double* lambda_G_m,
+                               double* rho_lambda,
                                double* alpha,
                                double* me
                                );

@@ -420,6 +420,8 @@ int background_functions(
   pvecback[pba->index_bg_a] = a;
 
   /** - compute each component's density and pressure */
+  double alpha, me, lambda_G_m;
+  class_call(background_varconst_of_z(pba, 1./a - 1., &lambda_G_m, &(pvecback[pba->index_bg_rho_lambda]), &alpha, &me ), pba->error_message,pba->error_message);
 
   /* photons */
   pvecback[pba->index_bg_rho_g] = pba->Omega0_g * pow(pba->H0,2) / pow(a,4);
@@ -429,14 +431,14 @@ int background_functions(
   rho_r += pvecback[pba->index_bg_rho_g];
 
   /* baryons */
-  pvecback[pba->index_bg_rho_b] = pba->Omega0_b * pow(pba->H0,2) / pow(a,3);
+  pvecback[pba->index_bg_rho_b] = (pow(lambda_G_m,2)/pow(pba->lambda_G_m_0,2))*pba->Omega0_b * pow(pba->H0,2) / pow(a,3);
   rho_tot += pvecback[pba->index_bg_rho_b];
   p_tot += 0;
   rho_m += pvecback[pba->index_bg_rho_b];
 
   /* cdm */
   if (pba->has_cdm == _TRUE_) {
-    pvecback[pba->index_bg_rho_cdm] = pba->Omega0_cdm * pow(pba->H0,2) / pow(a,3);
+    pvecback[pba->index_bg_rho_cdm] = (pow(lambda_G_m,2)/pow(pba->lambda_G_m_0,2))* pba->Omega0_cdm * pow(pba->H0,2) / pow(a,3);
     rho_tot += pvecback[pba->index_bg_rho_cdm];
     p_tot += 0.;
     rho_m += pvecback[pba->index_bg_rho_cdm];
@@ -531,7 +533,7 @@ int background_functions(
 
   /* Lambda */
   if (pba->has_lambda == _TRUE_) {
-    pvecback[pba->index_bg_rho_lambda] = pba->Omega0_lambda * pow(pba->H0,2);
+    /*La valeur de rho_lambda a déjà été changée par background_varconst_of_z au début de la fonction*/
     rho_tot += pvecback[pba->index_bg_rho_lambda];
     p_tot -= pvecback[pba->index_bg_rho_lambda];
   }
@@ -628,8 +630,11 @@ int background_functions(
 
     /**- Varying fundamental constants */
     if (pba->has_varconst == _TRUE_) {
+      double lambda_G_m;
       class_call(background_varconst_of_z(pba,
                                           1./a-1.,
+                                          &lambda_G_m,
+                                          &(pvecback[pba->index_bg_rho_lambda]),
                                           &(pvecback[pba->index_bg_varc_alpha]),
                                           &(pvecback[pba->index_bg_varc_me])
                                           ),
@@ -766,6 +771,8 @@ int background_w_fld(
 int background_varconst_of_z(
                              struct background* pba,
                              double z,
+                             double* lambda_G_m,
+                             double* rho_lambda,
                              double* alpha,
                              double* me
                              ){
@@ -775,22 +782,50 @@ int background_varconst_of_z(
   case varconst_none:
     *alpha = 1.;
     *me = 1.;
+    *lambda_G_m = 1.;
+    *rho_lambda = pba->Omega0_lambda * pow(pba->H0,2);
     break;
 
   case varconst_instant:
-    if (z>pba->varconst_transition_redshift){
+  {
+    double Lambda0 = (pba->Omega0_lambda)*pow(pba->H0,2);
+    double a = 2*(pba->lambda_G_m_0 - pba->lambda_G_m_inf)/pow(pba->delta_z, 3);
+    double b = -3*a*(pba->varconst_transition_redshift);
+    double c = 3*a*(pow(pba->varconst_transition_redshift,2) - pow(pba->delta_z, 2)/4);
+    double d = pba->lambda_G_m_0 - 0.25*a*(4*pow(pba->varconst_transition_redshift,3) - 3*pow(pba->delta_z,2)*(pba->varconst_transition_redshift) + pow(pba->delta_z,3));
+    double zm = pba->varconst_transition_redshift - 0.5*(pba->delta_z);
+    double zp;
+    if (z >= pba->varconst_transition_redshift+pba->delta_z/2) {
+			zp = pba->varconst_transition_redshift+pba->delta_z/2;
+		}
+		else {
+			zp = z;
+		}
+
+    if (z>(pba->varconst_transition_redshift+0.5*(pba->delta_z))){
       *alpha = pba->varconst_alpha;
       *me = pba->varconst_me;
+      *lambda_G_m = pba->lambda_G_m_inf;
+      *rho_lambda = Lambda0 - 6*(pba->Omega0_b + pba->Omega0_cdm)/pow(pba->lambda_G_m_0,2)*pow(pba->H0,2)*(a*a/3*(pow(zp,9) - pow(zm,9)) + (9*a*a + 5*a*b)/8*(pow(zp,8) - pow(zm,8)) + (9*a*a + 15*a*b + 4*a*c + 2*b*b)/7 * (pow(zp,7) - pow(zm,7)) + (3*a*a + 15*a*b + 12*a*c + 6*b*b + 3*a*d + 3*b*c)/6 * (pow(zp,6) - pow(zm, 6)) + (5*a*b + 12*a*c + 6*b*b + 9*a*d + 9*b*c + 2*b*d + c*c)/5 * (pow(zp, 5) - pow(zm, 5)) + (4*a*c + 2*b*b + 9*a*d + 9*b*c + 6*b*d + 3*c*c + c*d)/4 * (pow(zp,4) - pow(zm, 4)) + (a*d + b*c + 2*b*d + c*c + c*d)*(pow(zp,3) - pow(zm,3)) + 0.5*(2*b*d + c*c + 3*c*d) * (pow(zp,2) - pow(zm,2)) + c*d*(zp-zm));
     }
-    else{
+    if (z<(pba->varconst_transition_redshift+0.5*(pba->delta_z)) && z>(pba->varconst_transition_redshift-0.5*(pba->delta_z))){
       *alpha = 1.;
       *me = 1.;
+      *lambda_G_m = a*pow(z,3)+b*pow(z,2)+c*z+d;
+      *rho_lambda = Lambda0 - 6*(pba->Omega0_b + pba->Omega0_cdm)/pow(pba->lambda_G_m_0,2)*pow(pba->H0,2)*(a*a/3*(pow(zp,9) - pow(zm,9)) + (9*a*a + 5*a*b)/8*(pow(zp,8) - pow(zm,8)) + (9*a*a + 15*a*b + 4*a*c + 2*b*b)/7 * (pow(zp,7) - pow(zm,7)) + (3*a*a + 15*a*b + 12*a*c + 6*b*b + 3*a*d + 3*b*c)/6 * (pow(zp,6) - pow(zm, 6)) + (5*a*b + 12*a*c + 6*b*b + 9*a*d + 9*b*c + 2*b*d + c*c)/5 * (pow(zp, 5) - pow(zm, 5)) + (4*a*c + 2*b*b + 9*a*d + 9*b*c + 6*b*d + 3*c*c + c*d)/4 * (pow(zp,4) - pow(zm, 4)) + (a*d + b*c + 2*b*d + c*c + c*d)*(pow(zp,3) - pow(zm,3)) + 0.5*(2*b*d + c*c + 3*c*d) * (pow(zp,2) - pow(zm,2)) + c*d*(zp-zm));
+    }
+    if (z<(pba->varconst_transition_redshift-0.5*(pba->delta_z))){
+      *alpha = 1.;
+      *me = 1.;
+      *lambda_G_m = pba->lambda_G_m_0;
+      *rho_lambda = Lambda0;
     }
     break;
-
+  }
     /* Implement here your arbitrary model of varying fundamental constants! */
   }
   return _SUCCESS_;
+
 }
 
 /**
@@ -806,7 +841,6 @@ int background_init(
                     struct precision * ppr,
                     struct background * pba
                     ) {
-
   /** Summary: */
 
   /** - write class version */
@@ -2621,7 +2655,12 @@ int background_derivs(
              "rho_g = %e instead of strictly positive",pvecback[pba->index_bg_rho_g]);
 
   /** - calculate detivative of sound horizon \f$ drs/dloga = drs/dtau * dtau/dloga = c_s/aH \f$*/
-  dy[pba->index_bi_rs] = 1./a/H/sqrt(3.*(1.+3.*pvecback[pba->index_bg_rho_b]/4./pvecback[pba->index_bg_rho_g]))*sqrt(1.-pba->K*y[pba->index_bi_rs]*y[pba->index_bi_rs]); // TBC: curvature correction
+  double lambda_G_m;
+  class_call(background_varconst_of_z(pba, 1./pvecback[pba->index_bg_a] - 1., &lambda_G_m, &pvecback[pba->index_bg_rho_lambda], &pvecback[pba->index_bg_varc_alpha], &pvecback[pba->index_bg_varc_me]),
+                 pba->error_message,
+                 pba->error_message);
+
+  dy[pba->index_bi_rs] = 1./a/H/sqrt(3.*(1.+3.*(pow(lambda_G_m,2)/pow(pba->lambda_G_rad,2))*pvecback[pba->index_bg_rho_b]/4./pvecback[pba->index_bg_rho_g]))*sqrt(1.-pba->K*y[pba->index_bi_rs]*y[pba->index_bi_rs]); // TBC: curvature correction
 
   /** - solve second order growth equation \f$ [D''(\tau)=-aHD'(\tau)+3/2 a^2 \rho_M D(\tau) \f$
       written as \f$ dD/dloga = D' / (aH) \f$ and \f$ dD'/dloga = -D' + (3/2) (a/H) \rho_M D \f$ */
