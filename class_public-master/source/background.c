@@ -2621,7 +2621,7 @@ int background_derivs(
              "rho_g = %e instead of strictly positive",pvecback[pba->index_bg_rho_g]);
 
   /** - calculate detivative of sound horizon \f$ drs/dloga = drs/dtau * dtau/dloga = c_s/aH \f$*/
-  dy[pba->index_bi_rs] = 1./a/H/sqrt(3.*(1.+3.*pvecback[pba->index_bg_rho_b]/4./pvecback[pba->index_bg_rho_g]))*sqrt(1.-pba->K*y[pba->index_bi_rs]*y[pba->index_bi_rs]); // TBC: curvature correction
+  dy[pba->index_bi_rs] = 1./a/H/sqrt(3.*(1.+3.*(pow(pba->lambda_G_m,2)/pow(pba->lambda_G_rad,2))*pvecback[pba->index_bg_rho_b]/4./pvecback[pba->index_bg_rho_g]))*sqrt(1.-pba->K*y[pba->index_bi_rs]*y[pba->index_bi_rs]); // TBC: curvature correction
 
   /** - solve second order growth equation \f$ [D''(\tau)=-aHD'(\tau)+3/2 a^2 \rho_M D(\tau) \f$
       written as \f$ dD/dloga = D' / (aH) \f$ and \f$ dD'/dloga = -D' + (3/2) (a/H) \rho_M D \f$ */
