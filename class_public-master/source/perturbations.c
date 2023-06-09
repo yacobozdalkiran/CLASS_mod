@@ -10027,7 +10027,11 @@ int perturbations_tca_slip_and_shear(double * y,
   a = pvecback[pba->index_bg_a];
   a_prime_over_a = pvecback[pba->index_bg_H] * a;
   a_primeprime_over_a = pvecback[pba->index_bg_H_prime] * a + 2. * a_prime_over_a * a_prime_over_a;
-  R = 4./3. * pvecback[pba->index_bg_rho_g]/pvecback[pba->index_bg_rho_b];
+  double alpha = 1., me = 1., lambda_G_m = 1., rho_lambda = 1.;
+  class_call(background_varconst_of_z(pba, 1./pvecback[pba->index_bg_a] - 1., &lambda_G_m, &rho_lambda, &alpha, &me),
+                 pba->error_message,
+                 pth->error_message);
+  R = 4./3. * pvecback[pba->index_bg_rho_g]/pvecback[pba->index_bg_rho_b]*pow(pba->lambda_G_rad,2)/pow(lambda_G_m,2);
   s2_squared = 1.-3.*pba->K/k2;
 
   /** - --> (a) define short-cut notations for the scalar perturbations */
