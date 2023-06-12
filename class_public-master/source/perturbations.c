@@ -8846,7 +8846,12 @@ int perturbations_derivs(double tau,
   a = pvecback[pba->index_bg_a];
   a2 = a*a;
   a_prime_over_a = pvecback[pba->index_bg_H] * a;
-  R = 4./3. * pvecback[pba->index_bg_rho_g]/pvecback[pba->index_bg_rho_b];
+  double lambda_G_m;
+  class_call(background_varconst_of_z(pba,1./a - 1., &lambda_G_m, &pvecback[pba->index_bg_rho_lambda], &pvecback[pba->index_bg_varc_alpha], &pvecback[pba->index_bg_varc_me]),
+                 pba->error_message,
+                 pth->error_message);
+
+  R = 4./3. *(pow(pba->lambda_G_rad,2)*pow(lambda_G_m,2))* pvecback[pba->index_bg_rho_g]/pvecback[pba->index_bg_rho_b];
 
   photon_scattering_rate = pvecthermo[pth->index_th_dkappa];
 
