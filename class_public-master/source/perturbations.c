@@ -5471,7 +5471,7 @@ int perturbations_initial_conditions(struct precision * ppr,
     }
 
     /* Omega_m(t_i) / Omega_r(t_i) */
-    rho_m_over_rho_r = rho_m/rho_r;
+    rho_m_over_rho_r = (pow(pba->lambda_G_rad,2)/pow(pba->lambda_G_m,2))*rho_m/rho_r;
 
     /* omega = Omega_m(t_i) a(t_i) H(t_i) / sqrt(Omega_r(t_i))
        = Omega_m(t_0) a(t_0) H(t_0) / sqrt(Omega_r(t_0)) assuming rho_m in a-3 and rho_r in a^-4
