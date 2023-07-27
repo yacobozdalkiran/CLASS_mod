@@ -603,7 +603,7 @@ int thermodynamics_helium_from_bbn(
              pth->error_message);
 
   omega_b=pba->Omega0_b*pba->h*pba->h;
-  printf("Je passe par omega_b");
+ 
 
   class_test(omega_b < omegab[0],
              pth->error_message,
