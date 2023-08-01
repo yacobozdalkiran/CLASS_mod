@@ -815,7 +815,14 @@ int background_varconst_of_z(
       *alpha = 1.;
       *me = 1.;
       *lambda_G = a*pow(z,3)+b*pow(z,2)+c*z+d;
-      *rho_lambda = Lambda0 - 6*(pba->Omega0_b + pba->Omega0_cdm)/pow(pba->lambda_G_0,2)*pow(pba->H0,2)*(a*a/3*(pow(zp,9) - pow(zm,9)) + (9*a*a + 5*a*b)/8*(pow(zp,8) - pow(zm,8)) + (9*a*a + 15*a*b + 4*a*c + 2*b*b)/7 * (pow(zp,7) - pow(zm,7)) + (3*a*a + 15*a*b + 12*a*c + 6*b*b + 3*a*d + 3*b*c)/6 * (pow(zp,6) - pow(zm, 6)) + (5*a*b + 12*a*c + 6*b*b + 9*a*d + 9*b*c + 2*b*d + c*c)/5 * (pow(zp, 5) - pow(zm, 5)) + (4*a*c + 2*b*b + 9*a*d + 9*b*c + 6*b*d + 3*c*c + c*d)/4 * (pow(zp,4) - pow(zm, 4)) + (a*d + b*c + 2*b*d + c*c + c*d)*(pow(zp,3) - pow(zm,3)) + 0.5*(2*b*d + c*c + 3*c*d) * (pow(zp,2) - pow(zm,2)) + c*d*(zp-zm));
+      *rho_lambda = Lambda0 - 2*(pba->Omega0_b + pba->Omega0_cdm)/pow(pba->lambda_G_0,2)*pow(pba->H0,2)*
+                    (a*a/3*(pow(zp,9) - pow(zm,9)) + (9*a*a + 5*a*b)/8*(pow(zp,8) - pow(zm,8)) +
+                     (9*a*a + 15*a*b + 4*a*c + 2*b*b)/7 * (pow(zp,7) - pow(zm,7)) + 
+                     (3*a*a + 15*a*b + 12*a*c + 6*b*b + 3*a*d + 3*b*c)/6 * (pow(zp,6) - pow(zm, 6)) +
+                     (5*a*b + 12*a*c + 6*b*b + 9*a*d + 9*b*c + 2*b*d + c*c)/5 * (pow(zp, 5) - pow(zm, 5)) + 
+                     (4*a*c + 2*b*b + 9*a*d + 9*b*c + 6*b*d + 3*c*c + c*d)/4 * (pow(zp,4) - pow(zm, 4)) + 
+                     (a*d + b*c + 2*b*d + c*c + c*d)*(pow(zp,3) - pow(zm,3)) + 0.5*(2*b*d + c*c + 3*c*d) * 
+                     (pow(zp,2) - pow(zm,2)) + c*d*(zp-zm));
     }
     if (z<(pba->varconst_transition_redshift-0.5*(pba->delta_z))){
       *alpha = 1.;
